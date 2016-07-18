@@ -4,10 +4,8 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
 	http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-	<import resource="db/Spring-Datasource.xml" />
-	
-	<import resource="spring-beans/dao/ApartmentDao.xml" />
-	
-	<import resource="spring-beans/sync/SyncApartmentService.xml" />
+	<bean id="apartmentDao" class="com.junjie.dao.ApartmentDao">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
 
 </beans>

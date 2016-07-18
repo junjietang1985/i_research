@@ -5,6 +5,7 @@
 	http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
 	<bean id="syncApartmentService" class="com.junjie.sync.SyncApartmentService">
+		<constructor-arg ref="apartmentDao"></constructor-arg>
 	</bean>
 
 </beans>
