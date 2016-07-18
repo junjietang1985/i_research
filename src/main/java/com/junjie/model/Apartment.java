@@ -1,8 +1,12 @@
 package com.junjie.model;
 
+import java.util.Date;
+
 public class Apartment
 {
 	Long id;
+
+	Date lastSync;
 
 	Float sqare;
 	Float price;
@@ -16,9 +20,9 @@ public class Apartment
 
 	String address;
 
-	Double latitude;
+	Float latitude;
 
-	Double longitude;
+	Float longitude;
 
 	String areaTextSearch;
 
@@ -56,19 +60,19 @@ public class Apartment
 	{
 		this.address = address;
 	}
-	public Double getLatitude()
+	public Float getLatitude()
 	{
 		return latitude;
 	}
-	public void setLatitude(Double latitude)
+	public void setLatitude(Float latitude)
 	{
 		this.latitude = latitude;
 	}
-	public Double getLongitude()
+	public Float getLongitude()
 	{
 		return longitude;
 	}
-	public void setLongitude(Double longitude)
+	public void setLongitude(Float longitude)
 	{
 		this.longitude = longitude;
 	}
@@ -119,6 +123,14 @@ public class Apartment
 	public void setImmoId(Long immoId)
 	{
 		this.immoId = immoId;
+	}
+	public Date getLastSync()
+	{
+		return lastSync;
+	}
+	public void setLastSync(Date lastSync)
+	{
+		this.lastSync = lastSync;
 	}
 
 }

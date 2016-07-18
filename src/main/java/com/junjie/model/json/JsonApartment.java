@@ -17,9 +17,9 @@ public class JsonApartment
 
 	List<JsonApartmentAttributes> attributes;
 
-	Double latitude;
+	Float latitude;
 
-	Double longitude;
+	Float longitude;
 
 	public Long getId()
 	{
@@ -51,12 +51,12 @@ public class JsonApartment
 		return attributes;
 	}
 
-	public Double getLatitude()
+	public Float getLatitude()
 	{
 		return latitude;
 	}
 
-	public Double getLongitude()
+	public Float getLongitude()
 	{
 		return longitude;
 	}
