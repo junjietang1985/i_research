@@ -8,8 +8,8 @@ public class Apartment
 
 	Date lastSync;
 
-	Float square;
-	Float price;
+	Double square;
+	Double price;
 	Integer room;
 
 	Long immoId;
@@ -27,15 +27,6 @@ public class Apartment
 	String areaTextSearch;
 
 	String district;
-
-	public Float getPrice()
-	{
-		return price;
-	}
-	public void setPrice(Float price)
-	{
-		this.price = price;
-	}
 	public Boolean getPrivateOffer()
 	{
 		return privateOffer;
@@ -100,14 +91,6 @@ public class Apartment
 	{
 		this.id = id;
 	}
-	public Float getSquare()
-	{
-		return square;
-	}
-	public void setSquare(Float square)
-	{
-		this.square = square;
-	}
 	public Integer getRoom()
 	{
 		return room;
@@ -131,6 +114,18 @@ public class Apartment
 	public void setLastSync(Date lastSync)
 	{
 		this.lastSync = lastSync;
+	}
+	public Double getSquare() {
+		return square;
+	}
+	public void setSquare(Double square) {
+		this.square = square;
+	}
+	public Double getPrice() {
+		return price;
+	}
+	public void setPrice(Double price) {
+		this.price = price;
 	}
 
 }
