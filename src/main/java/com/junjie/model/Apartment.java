@@ -8,7 +8,7 @@ public class Apartment
 
 	Date lastSync;
 
-	Float sqare;
+	Float square;
 	Float price;
 	Integer room;
 
@@ -100,13 +100,13 @@ public class Apartment
 	{
 		this.id = id;
 	}
-	public Float getSqare()
+	public Float getSquare()
 	{
-		return sqare;
+		return square;
 	}
-	public void setSqare(Float sqare)
+	public void setSquare(Float square)
 	{
-		this.sqare = sqare;
+		this.square = square;
 	}
 	public Integer getRoom()
 	{

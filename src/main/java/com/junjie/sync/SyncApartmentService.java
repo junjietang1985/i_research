@@ -1,12 +1,18 @@
-package com.junjie;
+package com.junjie.sync;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.junjie.dao.ApartmentDao;
 import com.junjie.model.Apartment;
 import com.junjie.model.json.JsonApartment;
 import com.junjie.model.json.JsonApartmentAttributes;
@@ -18,6 +24,15 @@ import com.junjie.utils.immo24.Immo24Utils;
 
 public class SyncApartmentService
 {
+	Log logger = LogFactory.getLog(getClass());
+
+	private ApartmentDao apartmentDao;
+
+	@Autowired
+	public SyncApartmentService(ApartmentDao apartmentDao)
+	{
+		this.apartmentDao = apartmentDao;
+	}
 
 	public void sync()
 	{
@@ -27,28 +42,29 @@ public class SyncApartmentService
 		{
 			for (int i = 1; i <= Immo24Utils.getPageNumber(keyword); i++)
 			{
-				//TODO
-				if (i > 1)
-				{
-					break;
-				}
-				System.out.println("page " + i);
+				logger.info(String.format("Syncing page %d of keyword %s.", i, keyword));
 				String pageUrl = Immo24Utils.getSearchResultUrl(i, keyword);
 
 				try (BufferedReader br = new BufferedReader(new InputStreamReader(HttpURLConnectionUtils.getInputStream(pageUrl))))
 				{
 					String line = br.lines().filter(x -> Immo24Utils.isApartmentData(x)).findFirst().get();
+					// retrieve the json that represents the apartment
 					String json = Immo24Utils.toJsonApartment(line);
-					//					System.out.println(json);
 					JsonApartmentRoot jsonApartmentRoot = Immo24JsonUtils.build(json);
-					//					System.out.println(jsonApartmentRoot.toString());
-					//					jsonApartmentRoot.getResults().forEach(x -> System.out.println(x.toString()));
+					logger.info(String.format("Syncing %d apartments.", jsonApartmentRoot.getResults().size()));
 					for (JsonApartment jsonApartment : jsonApartmentRoot.getResults())
 					{
 						Apartment apartment = toApartment(keyword, jsonApartment);
-						if (apartment == null)
-						{
+						logger.info(String.format("Syncing apartment: [immoId: %d]", apartment.getImmoId()));
 
+						Apartment dbApartment = apartmentDao.getByImmoId(apartment.getImmoId());
+						if (dbApartment == null)
+						{
+							add(apartment);
+						}
+						else
+						{
+							update(apartment, dbApartment);
 						}
 					}
 
@@ -58,6 +74,37 @@ public class SyncApartmentService
 					e.printStackTrace();
 				}
 			}
+		}
+	}
+
+	private void add(Apartment apartment)
+	{
+		logger.info(String.format("Adding apartment: [immoId: %d]", apartment.getImmoId()));
+		apartment.setLastSync(new Date());
+		apartmentDao.save(apartment);
+	}
+
+	private void update(Apartment apartment, Apartment dbApartment)
+	{
+		logger.info(String.format("Updating apartment: [immoId: %d]", apartment.getImmoId()));
+		apartment.setLastSync(new Date());
+		apartment.setId(dbApartment.getId());
+		// if price keeps the same, only update last sync
+		if (apartment.getPrice() == dbApartment.getPrice())
+		{
+			logger.info("Same price: only update last sync");
+			apartmentDao.updateLastSync(apartment);
+			return;
+		}
+		// if square or room changes, must check 
+		if (apartment.getSquare() != dbApartment.getSquare() || apartment.getRoom() != dbApartment.getRoom())
+		{
+			logger.error("Sqare or Room changed");
+			throw new IllegalArgumentException("Sqare or Room changed");
+		}
+		else
+		{
+			apartmentDao.update(apartment);
 		}
 	}
 
@@ -79,13 +126,13 @@ public class SyncApartmentService
 			switch (attribute.getTitle())
 			{
 			case Immo24Utils.SQARE:
-				apartment.setSqare(Float.parseFloat(Immo24Utils.removeSqareMetre(attribute.getValue())));
+				apartment.setSquare(NumericalUtils.getFloatFrom(Immo24Utils.removeSqareMetre(attribute.getValue()), Locale.GERMANY));
 				break;
 			case Immo24Utils.PRICE:
 				apartment.setPrice(NumericalUtils.getFloatFrom(Immo24Utils.removeEuro(attribute.getValue()), Locale.GERMANY));
 				break;
 			case Immo24Utils.ROOM:
-				apartment.setRoom(Integer.parseInt(attribute.getValue()));
+				apartment.setRoom(NumericalUtils.getIntegerFrom(attribute.getValue(), Locale.GERMANY));
 				break;
 			default:
 				throw new IllegalArgumentException(attribute.toString());
@@ -96,7 +143,6 @@ public class SyncApartmentService
 	}
 	public static void main(String[] args)
 	{
-		new SyncApartmentService().sync();
 
 	}
 
