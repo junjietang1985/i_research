@@ -39,7 +39,8 @@ public class Immo24Utils
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(HttpURLConnectionUtils.getInputStream(page1Url))))
 		{
 
-			return (int) br.lines().filter(line -> COUNT_PAGE_NUM.matcher(line).find()).count();
+			int pageCount = (int) br.lines().filter(line -> COUNT_PAGE_NUM.matcher(line).find()).count();
+			return pageCount == 0 ? 1 : pageCount;
 		}
 		catch (IOException e)
 		{
