@@ -27,6 +27,7 @@ public class Apartment
 	String areaTextSearch;
 
 	String district;
+
 	public Boolean getPrivateOffer()
 	{
 		return privateOffer;
@@ -115,17 +116,28 @@ public class Apartment
 	{
 		this.lastSync = lastSync;
 	}
-	public Double getSquare() {
+	public Double getSquare()
+	{
 		return square;
 	}
-	public void setSquare(Double square) {
+	public void setSquare(Double square)
+	{
 		this.square = square;
 	}
-	public Double getPrice() {
+	public Double getPrice()
+	{
 		return price;
 	}
-	public void setPrice(Double price) {
+	public void setPrice(Double price)
+	{
 		this.price = price;
+	}
+
+	@Override
+	public String toString()
+	{
+		return String.format(this.getClass().getSimpleName() + ": [immoId = %d, price = %f, square = %f, room = %d, title = %s, address = %s] ",
+			this.getImmoId(), this.getPrice(), this.getSquare(), this.getRoom(), this.getTitle(), this.getAddress());
 	}
 
 }

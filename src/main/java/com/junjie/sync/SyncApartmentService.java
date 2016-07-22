@@ -3,6 +3,7 @@ package com.junjie.sync;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -28,6 +29,8 @@ public class SyncApartmentService
 
 	private ApartmentDao apartmentDao;
 
+	private List<Apartment[]> unupdatedApartments = new ArrayList<>();
+
 	@Autowired
 	public SyncApartmentService(ApartmentDao apartmentDao)
 	{
@@ -50,12 +53,9 @@ public class SyncApartmentService
 					// retrieve the json that represents the apartment
 					String json = Immo24Utils.toJsonApartment(line);
 					JsonApartmentRoot jsonApartmentRoot = Immo24JsonUtils.build(json);
-					logger.info(String.format("Syncing %d apartments.", jsonApartmentRoot.getResults().size()));
 					for (JsonApartment jsonApartment : jsonApartmentRoot.getResults())
 					{
 						Apartment apartment = toApartment(keyword, jsonApartment);
-						logger.info(String.format("Syncing apartment: [immoId: %d]", apartment.getImmoId()));
-
 						Apartment dbApartment = apartmentDao.getByImmoId(apartment.getImmoId());
 						if (dbApartment == null)
 						{
@@ -74,11 +74,18 @@ public class SyncApartmentService
 				}
 			}
 		}
+		logger.warn("The following apartments were not updated, needs manual check.");
+		unupdatedApartments.forEach(this::logUnupdatedApartments);
+		logger.info("**********   APP FINISHED   **********");
+	}
+	private void logUnupdatedApartments(Apartment[] apartments)
+	{
+		logger.warn("DB: " + apartments[0]);
+		logger.warn("Website: " + apartments[1]);
 	}
 
 	private void add(Apartment apartment)
 	{
-		logger.info(String.format("Adding apartment: [immoId: %d]", apartment.getImmoId()));
 		apartment.setLastSync(new Date());
 		if (validate(apartment))
 		{
@@ -92,7 +99,6 @@ public class SyncApartmentService
 
 	private void update(Apartment apartment, Apartment dbApartment)
 	{
-		logger.info(String.format("Updating apartment: [immoId: %d]", apartment.getImmoId()));
 		apartment.setLastSync(new Date());
 		apartment.setId(dbApartment.getId());
 		// if price keeps the same, only update last sync
@@ -102,23 +108,24 @@ public class SyncApartmentService
 			apartmentDao.updateLastSync(apartment);
 			return;
 		}
-		// if square or room changes, must check
-		if (!dbApartment.getSquare().equals(apartment.getSquare()) || !dbApartment.getRoom().equals(apartment.getRoom()))
+		if (validate(apartment))
 		{
-			logger.error(String.format("Sqare [%f -> %f] or Room [%d -> %d] changed.", dbApartment.getSquare(), apartment.getSquare(),
-				dbApartment.getRoom(), apartment.getRoom()));
-			throw new IllegalArgumentException("Sqare or Room changed");
-		}
-		else
-		{
-			if (validate(apartment))
+			// if square or room changes, must check
+			if ((!dbApartment.getSquare().equals(apartment.getSquare()) || !dbApartment.getRoom().equals(apartment.getRoom()))
+					&& !dbApartment.getAddress().equals(apartment.getAddress()))
 			{
-				apartmentDao.update(apartment);
+				logger.warn(String.format("Sqare [%f -> %f] or Room [%d -> %d] changed.", dbApartment.getSquare(), apartment.getSquare(),
+					dbApartment.getRoom(), apartment.getRoom()));
+				unupdatedApartments.add(new Apartment[] { dbApartment, apartment });
 			}
 			else
 			{
-				logger.warn(String.format("Skipping not valid apartment: [immoId: %d]", apartment.getImmoId()));
+				apartmentDao.update(apartment);
 			}
+		}
+		else
+		{
+			logger.warn(String.format("Skipping not valid apartment: [immoId: %d]", apartment.getImmoId()));
 		}
 	}
 
