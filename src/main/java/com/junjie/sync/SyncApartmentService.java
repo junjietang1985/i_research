@@ -76,12 +76,19 @@ public class SyncApartmentService
 		}
 		logger.warn("The following apartments were not updated, needs manual check.");
 		unupdatedApartments.forEach(this::logUnupdatedApartments);
+		unupdatedApartments.forEach(this::logUpdateSqlForUnexecuted);
 		logger.info("**********   APP FINISHED   **********");
 	}
+	
 	private void logUnupdatedApartments(Apartment[] apartments)
 	{
 		logger.warn("DB: " + apartments[0]);
 		logger.warn("Website: " + apartments[1]);
+	}
+	
+	private void logUpdateSqlForUnexecuted(Apartment[] apartments)
+	{
+		logger.info(apartments[1]);
 	}
 
 	private void add(Apartment apartment)
@@ -158,7 +165,7 @@ public class SyncApartmentService
 				apartment.setPrice(NumericalUtils.parseDouble(Immo24Utils.removeEuro(attribute.getValue()), Locale.GERMANY));
 				break;
 			case Immo24Utils.ROOM:
-				apartment.setRoom(NumericalUtils.parseInt(attribute.getValue(), Locale.GERMANY));
+				apartment.setRoom(NumericalUtils.parseDouble(attribute.getValue(), Locale.GERMANY));
 				break;
 			default:
 				throw new IllegalArgumentException(attribute.toString());
