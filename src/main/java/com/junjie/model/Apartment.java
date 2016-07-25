@@ -10,7 +10,7 @@ public class Apartment
 
 	Double square;
 	Double price;
-	Integer room;
+	Double room;
 
 	Long immoId;
 
@@ -92,11 +92,11 @@ public class Apartment
 	{
 		this.id = id;
 	}
-	public Integer getRoom()
+	public Double getRoom()
 	{
 		return room;
 	}
-	public void setRoom(Integer room)
+	public void setRoom(Double room)
 	{
 		this.room = room;
 	}
