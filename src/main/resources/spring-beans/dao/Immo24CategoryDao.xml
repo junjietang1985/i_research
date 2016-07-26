@@ -4,9 +4,8 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
 	http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-	<bean id="syncApartmentService" class="com.junjie.sync.SyncApartmentService">
-		<constructor-arg ref="apartmentDao"></constructor-arg>
-		<constructor-arg ref="immo24CategoryDao"></constructor-arg>
+	<bean id="immo24CategoryDao" class="com.junjie.dao.Immo24CategoryDao">
+		<property name="dataSource" ref="dataSource" />
 	</bean>
 
 </beans>

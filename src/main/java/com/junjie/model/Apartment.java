@@ -136,7 +136,7 @@ public class Apartment
 	@Override
 	public String toString()
 	{
-		return String.format(this.getClass().getSimpleName() + ": [immoId = %d, price = %f, square = %f, room = %d, title = %s, address = %s] ",
+		return String.format(this.getClass().getSimpleName() + ": [immoId = %d, price = %f, square = %f, room = %f, title = %s, address = %s] ",
 			this.getImmoId(), this.getPrice(), this.getSquare(), this.getRoom(), this.getTitle(), this.getAddress());
 	}
 
