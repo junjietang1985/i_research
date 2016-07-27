@@ -2,6 +2,7 @@ package com.junjie.stat;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,16 +29,20 @@ public class ApartmentStatService {
 		this.apartmentDao = apartmentDao;
 	}
 
-	public void avg() {
+	public void avgPriceReport() {
 		for (AreaTextSearch area : AreaTextSearch.values()) {
 			List<Apartment> apartments = apartmentDao
 					.getApartmentsByAraeTextSearch(area.getTextSearch());
-			apartments = apartments.stream().filter(a -> a.getPrice() <= MAX_PRICE)
-					.filter(a -> a.getPrice() >= MIN_PRICE)
-					.filter(a -> a.getSquare() > MIN_SQUARE).collect(Collectors.toList());
-			logger.info(" The avg price of area: " + area.getTextSearch());
+			apartments = filterExtremeCase(apartments);
+			logger.info(" The avg price/per square of area: " + area.getTextSearch());
 			logger.info(String.format("%.2f", this.getAvgPrice(apartments)));
 		}
+	}
+
+	private List<Apartment> filterExtremeCase(List<Apartment> apartments){
+		return apartments.stream().filter(a -> a.getPrice() <= MAX_PRICE)
+				.filter(a -> a.getPrice() >= MIN_PRICE)
+				.filter(a -> a.getSquare() > MIN_SQUARE).collect(Collectors.toList());
 	}
 
 	private double getAvgPrice(List<Apartment> apartments) {
@@ -53,7 +58,7 @@ public class ApartmentStatService {
 				"Spring-context.xml");
 		ApartmentStatService apartmentStatService = (ApartmentStatService) context
 				.getBean("apartmentStatService");
-		apartmentStatService.avg();
+		apartmentStatService.avgPriceReport();
 
 	}
 
