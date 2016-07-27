@@ -1,6 +1,5 @@
 package com.junjie.stat;
 
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,29 +19,40 @@ public class ApartmentStatService {
 
 	private ApartmentDao apartmentDao;
 
+	private final double MAX_PRICE = 10_000;
+	private final double MIN_PRICE = 300;
+	private final double MIN_SQUARE = 20;
+
 	@Autowired
-	public ApartmentStatService(ApartmentDao apartmentDao)
-	{
+	public ApartmentStatService(ApartmentDao apartmentDao) {
 		this.apartmentDao = apartmentDao;
 	}
-	
-	//TODO
-	//need a filter
-	public void avg(){
-		for(AreaTextSearch area:AreaTextSearch.values()){
-			List<Apartment> apartments = apartmentDao.getApartmentsByAraeTextSearch(area.getTextSearch());
-			logger.info(" The avg price of area: "+ area.getTextSearch());
+
+	public void avg() {
+		for (AreaTextSearch area : AreaTextSearch.values()) {
+			List<Apartment> apartments = apartmentDao
+					.getApartmentsByAraeTextSearch(area.getTextSearch());
+			apartments = apartments.stream().filter(a -> a.getPrice() <= MAX_PRICE)
+					.filter(a -> a.getPrice() >= MIN_PRICE)
+					.filter(a -> a.getSquare() > MIN_SQUARE).collect(Collectors.toList());
+			logger.info(" The avg price of area: " + area.getTextSearch());
 			logger.info(String.format("%.2f", this.getAvgPrice(apartments)));
 		}
 	}
-	
-	private double getAvgPrice(List<Apartment> apartments){
-		return apartments.stream().collect(Collectors.averagingDouble(a->a.getPrice()/a.getSquare()));
+
+	private double getAvgPrice(List<Apartment> apartments) {
+		double sumPrice = apartments.stream().collect(
+				Collectors.summingDouble(a -> a.getPrice()));
+		double sumSquare = apartments.stream().collect(
+				Collectors.summingDouble(a -> a.getSquare()));
+		return sumPrice / sumSquare;
 	}
-	
+
 	public static void main(String[] args) {
-		ApplicationContext context = new ClassPathXmlApplicationContext("Spring-context.xml");
-		ApartmentStatService apartmentStatService = (ApartmentStatService) context.getBean("apartmentStatService");
+		ApplicationContext context = new ClassPathXmlApplicationContext(
+				"Spring-context.xml");
+		ApartmentStatService apartmentStatService = (ApartmentStatService) context
+				.getBean("apartmentStatService");
 		apartmentStatService.avg();
 
 	}
